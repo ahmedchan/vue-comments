@@ -16,4 +16,9 @@ import Comments from '@/components/comments/Comments.vue'
   margin: 0 auto;
   font-family: sans-serif;
 }
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+}
 </style>

@@ -1348,7 +1348,7 @@
       "text": "لاعب عادي جدا والنصر والاتحاد في غنى عنه الأفضل يروح نادي ميامي\nkmdej @oliviaw ",
       "parentId": null,
       "reactions": {
-        "thumbsUp": 0,
+        "thumbsUp": 1,
         "heart": 0,
         "laugh": 0
       },
@@ -1366,18 +1366,6 @@
         "laugh": 0
       },
       "createdAt": "2026-03-26T15:07:08.515Z"
-    },
-    {
-      "id": "ZZTuWVEcqho",
-      "user": "emilys",
-      "text": "can i got your phone @harpere or just @isabellad ",
-      "parentId": null,
-      "reactions": {
-        "thumbsUp": 0,
-        "heart": 0,
-        "laugh": 0
-      },
-      "createdAt": "2026-03-26T15:20:01.313Z"
     },
     {
       "id": "z3-GdXAqwtY",
@@ -1428,6 +1416,66 @@
         "laugh": 0
       },
       "createdAt": "2026-03-26T15:40:27.966Z"
+    },
+    {
+      "id": "8Je1ihtSmew",
+      "user": "madisonc",
+      "text": "Vuetify works out of the box @mateon  without any additional compilers needing to be installed but does support advanced use-cases such as modifying the underlying variables of the framework. Vite provides built-in support for sass, less and stylus files without the need to install Vite-specific plugins for them; just the corresponding pre-processor itself.\n\n",
+      "parentId": null,
+      "reactions": {
+        "thumbsUp": 0,
+        "heart": 1,
+        "laugh": 0
+      },
+      "createdAt": "2026-03-26T16:07:49.693Z"
+    },
+    {
+      "id": "HE55NG8tQEA",
+      "user": "madisonc",
+      "text": "configFile will be resolved relative to the project root, and loaded before each of vuetify’s stylesheets. Next, create a settings.scss file in your src/styles directory:\n\n",
+      "parentId": "v5XwR9UbnRg",
+      "reactions": {
+        "thumbsUp": 0,
+        "heart": 0,
+        "laugh": 0
+      },
+      "createdAt": "2026-03-26T16:08:11.257Z"
+    },
+    {
+      "id": "iraTLCdj0a8",
+      "user": "danielc",
+      "text": "okay that creay wow!",
+      "parentId": "8Je1ihtSmew",
+      "reactions": {
+        "thumbsUp": 0,
+        "heart": 0,
+        "laugh": 0
+      },
+      "createdAt": "2026-03-26T16:09:10.395Z"
+    },
+    {
+      "id": "ugfPxNPL4wE",
+      "user": "emilys",
+      "text": "Hello @noahh ",
+      "parentId": "HE55NG8tQEA",
+      "reactions": {
+        "thumbsUp": 0,
+        "heart": 0,
+        "laugh": 0
+      },
+      "createdAt": "2026-03-26T17:01:41.044Z"
+    },
+    {
+      "id": "Ox2XIlHug1Q",
+      "user": "emilys",
+      "text": "Okay",
+      "parentId": null,
+      "reactions": {
+        "thumbsUp": 0,
+        "heart": 0,
+        "laugh": 0
+      },
+      "createdAt": "2026-03-26T17:01:51.653Z"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"
