@@ -1,9 +1,10 @@
 import httpClient from '@/httpClient';
 import type { Comment } from '@/types/comments';
 
+
 export const fetchAllComments = async (): Promise<Comment[]> => {
-   const { data } = await httpClient.get<Comment[]>('/comments');
-   return data;
+   const result = await httpClient.get('/comments');
+   return result.data;
 };
 
 export const createComment = async (payload: Partial<Comment>): Promise<Comment> => {
@@ -12,7 +13,7 @@ export const createComment = async (payload: Partial<Comment>): Promise<Comment>
 };
 
 export const updateComment = async (id: string, payload: Partial<Comment>): Promise<void> => {
-   return await httpClient.patch(`/comments/${id}`, payload)
+   return await httpClient.put(`/comments/${id}`, payload)
 }
 
 export const deleteComment = async (id: string): Promise<void> => {

@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const httpClient = axios.create({
-   baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+   baseURL: "https://69c580138a5b6e2dec2c9566.mockapi.io/api/v1",
    timeout: 5000, // 5 seconds before giving up
 })
 
@@ -25,7 +25,7 @@ httpClient.interceptors.response.use(
    (error) => {
       // Handle global errors (404, 500, etc.)
       if (error.response?.status === 404) {
-         alert('Resource not found on the server!');
+         console.log('Resource not found on the server!');
       }
       return Promise.reject(error);
    }
