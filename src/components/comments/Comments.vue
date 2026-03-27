@@ -38,11 +38,8 @@
     <template v-if="usersList?.length > 0">
       <div v-show="comments && comments.length > 0" class="comment-toolbar">
         <div>{{ comments?.length }} Topic</div>
-        <div class="">
-          <button role="toggle collapse" type="button" @click="clearAllCollapsed()">
-            Expand All
-          </button>
-        </div>
+
+        <ToggleCollapse />
 
         <div class="search-bar">
           <input
@@ -91,6 +88,7 @@ import type { Comment } from '@/types/comments'
 import CommentItem from '@/components/comments/CommentItem.vue'
 import CommentEditor from '@/components/comments/CommentEditor.vue'
 import { getUsersQuery } from '@/composables/useUsersQuery'
+import ToggleCollapse from '@/components/comments/ToggleCollapse.vue'
 
 const newCommentText = ref('')
 const searchQuery = ref('')
@@ -232,14 +230,6 @@ const editComment = async (payload: Partial<Comment>) => {
       },
     },
   )
-}
-
-const clearAllCollapsed = () => {
-  Object.keys(localStorage)
-    .filter((key) => key.startsWith('comment-collapsed-'))
-    .forEach((key) => localStorage.removeItem(key))
-
-  window.location.reload()
 }
 </script>
 

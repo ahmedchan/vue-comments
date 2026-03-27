@@ -1,5 +1,9 @@
 <template>
-  <div class="comment-item" :id="`comment-${comment.id}`" :class="{ 'is-reply': comment.parentId }">
+  <div
+    class="comment-item"
+    :id="`comment-${comment.id}`"
+    :class="{ 'is-reply': comment.parentId, 'is-collapsed': isCollapsed }"
+  >
     <div class="thread-line" @click="isCollapsed = !isCollapsed" title="Toggle thread"></div>
 
     <div class="comment-inner">
@@ -199,7 +203,7 @@ const highlightedText = computed(() => {
   text = text.replace(urlPattern, (url) => {
     const fullUrl = url.startsWith('http') ? url : `https://${url}`
     const displayUrl = url.length > 30 ? url.substring(0, 50) + '...' : url
-    return `<a href="${fullUrl}" style="color:#3498db" target="_blank" rel="noopener noreferrer" class="comment-url">${displayUrl}</a>`
+    return `<a href="${fullUrl}" class="comment-url" target="_blank" rel="noopener noreferrer">${displayUrl}</a>`
   })
 
   // 4. Search Query Highlighting
@@ -262,12 +266,33 @@ const handleGlobalEsc = (event: KeyboardEvent) => {
   }
 }
 
+const handleGlobalExpand = () => {
+  // Get the vertical position of this element
+  const element = document.getElementById(`comment-${props.comment.id}`)
+  const rect = element?.getBoundingClientRect()
+  const top = rect?.top || 0
+
+  // Calculate delay: 50ms for every 500px of depth
+  // This creates a "falling" effect down the screen
+  const delay = Math.min(top / 10, 800)
+
+  setTimeout(() => {
+    isCollapsed.value = false
+  }, delay)
+}
+
+const handleGlobalCollapse = () => (isCollapsed.value = true)
+
 onMounted(() => {
   window.addEventListener('keydown', handleGlobalEsc)
+  window.addEventListener('expand-all-threads', handleGlobalExpand)
+  window.addEventListener('collapse-all-threads', handleGlobalCollapse)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalEsc)
+  window.removeEventListener('expand-all-threads', handleGlobalExpand)
+  window.removeEventListener('collapse-all-threads', handleGlobalCollapse)
 })
 </script>
 
@@ -331,6 +356,8 @@ onUnmounted(() => {
 }
 .replies-list {
   margin-top: 10px;
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
 }
 
 @keyframes slideIn {
@@ -438,6 +465,15 @@ mark {
   padding: 0 2px;
   border-radius: 2px;
   font-weight: bold;
+}
+
+// comment-url
+:deep(.comment-url) {
+  color: #3498db;
+  word-break: break-all;
+}
+:deep(.comment-url:hover) {
+  color: #db3434;
 }
 
 /* mention */

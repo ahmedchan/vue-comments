@@ -39,10 +39,10 @@ export function useCommentsQuery() {
 
          return { previousComments }
       },
-      onSuccess: (serverComment, variables) => {
+      onSuccess: (createdComment, variables) => {
          queryClient.setQueryData(['comments'], (old: Comment[] | undefined) => {
             return old?.map((c) =>
-               c.id === variables.id ? serverComment : c
+               c.id === variables.id ? createdComment : c
             )
          })
       },
@@ -52,9 +52,9 @@ export function useCommentsQuery() {
          }
       },
 
-      onSettled: () => {
-         queryClient.invalidateQueries({ queryKey: ['comments'] })
-      }
+      // onSettled: () => {
+      //    queryClient.invalidateQueries({ queryKey: ['comments'] })
+      // }
    })
 
    const deleteMutation = useMutation({
@@ -114,8 +114,11 @@ export function useCommentsQuery() {
          return { previousComments }
       },
 
-      onSuccess: () => {
-         queryClient.invalidateQueries({ queryKey: ['comments'] })
+      onSuccess: (updatedComment) => {
+         // Update the cache directly using the data returned from the server
+         queryClient.setQueryData<Comment[]>(['comments'], (old) => {
+            return old?.map(c => c.id === updatedComment.id ? updatedComment : c)
+         })
       },
       onError: (err, variables, context) => {
          if (context?.previousComments) {
