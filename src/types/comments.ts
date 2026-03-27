@@ -13,6 +13,14 @@ export interface Comment {
    createdAt: string;
    editedAt?: string; // Optional property
    replies?: Comment[]; // Used for the Tree structure
+   linkPreview?: LinkPreview
+}
+
+export interface LinkPreview {
+   image?: string
+   title?: string
+   description?: string
+   url?: string
 }
 
 export type CommentPayload = Omit<Comment, 'id' | 'createdAt' | 'reactions'>;

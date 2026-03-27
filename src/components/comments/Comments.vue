@@ -23,11 +23,11 @@
             :current-user="currentUser"
             v-model="newCommentText"
             :users="usersList"
-            @submit="postComment(null, newCommentText)"
+            @submit="postComment"
           />
         </div>
 
-        <button @click="postComment(null, newCommentText)" :disabled="isPosting">
+        <button @click="postComment({ text: newCommentText })" :disabled="isPosting">
           {{ isPosting ? 'posting...' : 'Post Comment' }}
         </button>
       </div>
@@ -74,13 +74,13 @@
           :searchQuery="searchQuery"
           :users="usersList"
           @react="(id, type, count) => updateReaction(id, type, count)"
-          @add-reply="({ parentId, text }) => postComment(parentId, text)"
+          @add-reply="(payload) => postComment(payload)"
           @delete-comment="(commentId) => removeComment(commentId)"
-          @edit-comment="({ id, text }) => editComment(id, text)"
+          @edit-comment="(payload) => editComment(payload)"
         />
       </div>
     </template>
-    <template v-else> loading.... </template>
+    <template v-else>Intializing App....</template>
   </div>
 </template>
 
@@ -178,8 +178,9 @@ const commentTree = computed<Comment[]>(() => {
 })
 
 // 3. Post New Comment or Reply
-const postComment = async (parentId: string | null, text: string) => {
-  if (!text.trim() || isPosting.value) return
+const postComment = async (payload: Partial<Comment>) => {
+  const { text, parentId, linkPreview } = payload
+  if (!text || !text.trim() || isPosting.value) return
 
   const tempId = Date.now().toString()
 
@@ -188,7 +189,8 @@ const postComment = async (parentId: string | null, text: string) => {
       id: tempId,
       user: currentUser.value,
       text,
-      parentId,
+      parentId: parentId || null,
+      linkPreview,
       reactions: { thumbsUp: 0, heart: 0, laugh: 0 },
       createdAt: new Date().toISOString(),
     },
@@ -212,17 +214,24 @@ const postComment = async (parentId: string | null, text: string) => {
 }
 
 // edit
-const editComment = async (commentId: string, text: string) => {
-  editCommentQuery(commentId, text, {
-    onSuccess: async () => {
-      await nextTick()
-      const el = document.getElementById(`comment-${commentId}`)
-      el?.classList.add('highlight-flash')
-      setTimeout(() => {
-        el?.classList.remove('highlight-flash')
-      }, 1000)
+const editComment = async (payload: Partial<Comment>) => {
+  const { id, text, linkPreview } = payload
+  if (!id || !text) return
+
+  editCommentQuery(
+    id,
+    { text, linkPreview },
+    {
+      onSuccess: async () => {
+        await nextTick()
+        const el = document.getElementById(`comment-${id}`)
+        el?.classList.add('highlight-flash')
+        setTimeout(() => {
+          el?.classList.remove('highlight-flash')
+        }, 1000)
+      },
     },
-  })
+  )
 }
 
 const clearAllCollapsed = () => {

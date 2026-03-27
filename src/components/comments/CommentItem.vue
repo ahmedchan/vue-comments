@@ -46,6 +46,8 @@
             <button v-if="needsTruncation" @click="isExpanded = !isExpanded" class="btn-show-more">
               {{ isExpanded ? 'Show Less' : 'Read More' }}
             </button>
+
+            <PreviewLink v-if="comment.linkPreview" :link-preview="comment.linkPreview" />
           </div>
 
           <div class="actions">
@@ -86,7 +88,7 @@
               @submit="submitReply"
             />
 
-            <button @click="submitReply">Send</button>
+            <button @click="submitReply({ text: replyText, parentId: comment.id })">Send</button>
             <button @click="cancelReply" class="btn-cancel-small">×</button>
           </div>
         </div>
@@ -115,6 +117,7 @@ import { ref, watch, nextTick, onMounted, onUnmounted, computed } from 'vue'
 import type { Comment as CommentType } from '@/types/comments'
 import { timeAgo } from '@/utils/dateHelpers'
 import CommentEditor from '@/components/comments/CommentEditor.vue'
+import PreviewLink from '@/components/comments/PreviewLink.vue'
 
 const props = defineProps<{
   comment: CommentType
@@ -125,9 +128,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'react', id: string, type: string, count: number): void
-  (e: 'add-reply', payload: { parentId: string; text: string }): void
+  (e: 'add-reply', payload: Partial<CommentType>): void
   (e: 'delete-comment', id: string): void
-  (e: 'edit-comment', payload: { id: string; text: string }): void
+  (e: 'edit-comment', payload: Partial<CommentType>): void
 }>()
 
 const isReplying = ref(false)
@@ -173,23 +176,33 @@ watch(isEditing, async (val) => {
 
 const highlightedText = computed(() => {
   // Use the truncated text instead of the full props.comment.text
-  let text =
-    isExpanded.value || !needsTruncation.value
-      ? props.comment.text
-      : props.comment.text.slice(0, TEXT_LIMIT) + '...'
+  let text = props.comment.text
 
+  // 1. Safe Truncation Logic
+  if (!isExpanded.value && needsTruncation.value) {
+    // Look for the last space before the limit to avoid cutting words/links
+    const lastSpace = text.lastIndexOf(' ', TEXT_LIMIT)
+
+    // If a space exists within the limit, cut there; otherwise, hard cut
+    const breakPoint = lastSpace > 0 ? lastSpace : TEXT_LIMIT
+    text = text.slice(0, breakPoint) + '...'
+  }
+
+  // 2. Mentions Highlighting (@user)
   text = text.replace(/@(\w+)/g, (match, username) => {
-    // Check if the username exists in our global users list
     const userExists = props.users.includes(username)
-
-    if (userExists) {
-      return `<span class="mention">@${username}</span>`
-    } else {
-      // If user doesn't exist, return the original text (@whatever) without the span
-      return match
-    }
+    return userExists ? `<span class="mention">@${username}</span>` : match
   })
 
+  // 3. NEW: URL Highlighting (http/https/www)
+  const urlPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/g
+  text = text.replace(urlPattern, (url) => {
+    const fullUrl = url.startsWith('http') ? url : `https://${url}`
+    const displayUrl = url.length > 30 ? url.substring(0, 50) + '...' : url
+    return `<a href="${fullUrl}" style="color:#3498db" target="_blank" rel="noopener noreferrer" class="comment-url">${displayUrl}</a>`
+  })
+
+  // 4. Search Query Highlighting
   const query = props.searchQuery?.trim()
   if (!query) return text
 
@@ -216,17 +229,25 @@ const cancelEdit = () => {
   editText.value = props.comment.text
 }
 
-const saveEdit = () => {
-  if (!editText.value.trim() || editText.value === props.comment.text) {
+const saveEdit = (payload: Partial<CommentType>) => {
+  if (!editText.value.trim() || editText.value === props.comment.text || !props.comment.id) {
     return cancelEdit()
   }
-  emit('edit-comment', { id: props.comment.id, text: editText.value })
+  emit('edit-comment', {
+    id: props.comment.id,
+    text: payload.text,
+    linkPreview: payload.linkPreview,
+  })
   isEditing.value = false
 }
 
-const submitReply = () => {
+const submitReply = (payload: Partial<CommentType>) => {
   if (!replyText.value.trim()) return
-  emit('add-reply', { parentId: props.comment.id, text: replyText.value })
+  emit('add-reply', {
+    parentId: props.comment.id,
+    text: payload.text,
+    linkPreview: payload.linkPreview,
+  })
   replyText.value = ''
   isReplying.value = false
 }
@@ -336,6 +357,7 @@ onUnmounted(() => {
   cursor: pointer;
   font-size: 0.8rem;
   padding: 0;
+  margin: 0 3px;
   display: inline-block;
   border-bottom: 1px dotted #3498db;
 }

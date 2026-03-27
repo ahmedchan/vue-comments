@@ -66,7 +66,33 @@ export function useCommentsQuery() {
          // Execute all deletes
          return Promise.all(idsToDelete.map(id => deleteComment(id)))
       },
-      onSuccess: () => {
+      onMutate: async (commentId) => {
+         // 1. Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+         await queryClient.cancelQueries({ queryKey: ['comments'] })
+         // 2. Snapshot the previous value
+         const previousComments = queryClient.getQueryData<Comment[]>(['comments'])
+         // 3. Optimistically update the cache
+         queryClient.setQueryData<Comment[]>(['comments'], (old) => {
+            if (!old) return []
+
+            // We need to remove the target comment and all its children from the local array
+            const idsToRemove = getAllIds(old, commentId)
+            return old.filter(c => !idsToRemove.includes(c.id))
+         })
+         // 4. Return context with the snapshotted value for rollback
+         return { previousComments }
+      },
+      // If the mutation fails, use the context we returned above
+      onError: (err, commentId, context) => {
+         if (context?.previousComments) {
+            queryClient.setQueryData(['comments'], context.previousComments)
+         }
+         // Optional: Alert the user that deletion failed
+         console.error("Failed to delete comment:", err)
+      },
+
+      // Always refetch after error or success to ensure we are synced with the server
+      onSettled: () => {
          queryClient.invalidateQueries({ queryKey: ['comments'] })
       }
    })
@@ -129,7 +155,8 @@ export function useCommentsQuery() {
          updateMutation.mutate({ id, payload: { reactions: updatedReactions } });
       },
 
-      editComment: (id: string, text: string, options?: Options) => updateMutation.mutate({ id, payload: { text, editedAt: new Date().toISOString() } }, options),
+      editComment: (id: string, payload: Partial<Comment>, options?: Options) =>
+         updateMutation.mutate({ id, payload: { text: payload.text, linkPreview: payload.linkPreview, editedAt: new Date().toISOString() } }, options),
 
       removeComment: (id: string) => {
          if (confirm('Delete this and all replies?')) {
